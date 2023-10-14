@@ -1,4 +1,4 @@
-const flagList = {
+const flags = {
     AD: "🇦🇩",
     AE: "🇦🇪",
     AF: "🇦🇫",
@@ -253,4 +253,4 @@ const flagList = {
     ZW: "🇿🇼",
 };
 
-export default flagList;
+export { flags };

@@ -1,6 +1,6 @@
 import { Map } from "./map.js";
 import { API } from "./api.js";
-import * as flags from "./map.js";
+import { flags } from "./flags.js";
 
 const API_URL = "http://localhost:8080/api";
 
@@ -26,6 +26,7 @@ function showFlightInfo(flightInfo) {
     document.getElementById("img_airline").src =
         "https://airlabs.co/img/airline/m/" + airline?.iata_code + ".png";
     document.getElementById("p_flag").textContent = flags[flightInfo.flag];
+
     document.getElementById("p_squawk").textContent = flightInfo.squawk;
     fetch(`http://localhost:8080/api/airplane/picture/${flightInfo.reg_number}`)
         .then((response) => response.json())
