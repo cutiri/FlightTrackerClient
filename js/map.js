@@ -26,6 +26,19 @@ export class Map {
         shadowAnchor: [12, 12], // the same for the shadow
         popupAnchor: [-3, -76], // point from which the popup should open relative to the iconAnchor
     });
+    //The Selected Airplane icon
+    #selectedAirplaneIcon = L.icon({
+        iconUrl: "./images/plane_selected.png",
+        shadowUrl: "./images/plane_shadow1.png",
+
+        iconSize: [30, 30], // size of the icon
+        shadowSize: [30, 30], // size of the shadow
+        iconAnchor: [15, 15], // point of the icon which will correspond to marker's location
+        shadowAnchor: [12, 12], // the same for the shadow
+        popupAnchor: [-3, -76], // point from which the popup should open relative to the iconAnchor
+    });
+    // store selected airplane to handle if one should spawn over it
+    #selectedAirplane
     //This will store a callback function that will get triggered each time we click a marker (airplane), we pass the HEX to that function
     #markerOnClick;
 
@@ -48,25 +61,35 @@ export class Map {
         });
         //Initializing the callback
         this.#markerOnClick = markerOnClickCallBack;
+        //Clear the selected airplane if clicking away from the airplane
+        // TODO
     }
 
     addMarker({ lat, lng, dir, flight_icao, hex }) {
         if (this.isInBound({ lat, lng })) {
             const coords = [lat, lng];
-            const marker = L.marker(coords, {
-                icon: this.#defaultAirplaneIcon,
-                rotationAngle: dir,
-            });
-            marker.bindTooltip(flight_icao);
-            this.#markers.push(marker);
-            marker.addTo(this.#map);
-            marker.on("click", () =>
-                //Callback triggered, a plane got clicked and we execute the call back passing the HEX value inside an object
-                this.#markerOnClick({ hex })
-            ); //TODO DELETE THIS, ADD SOME LOGIC HERE
-
-            return true;
+            // check if coords = the selected airplane to not overwrite selected airplane
+            if (!this.#selectedAirplane || coords[0] !== this.#selectedAirplane._latlng.lat && coords[0] !== this.#selectedAirplane._latlng.lng){
+                const marker = L.marker(coords, {
+                    icon: this.#defaultAirplaneIcon,
+                    rotationAngle: dir,
+                });
+                marker.bindTooltip(flight_icao);
+                this.#markers.push(marker);
+                marker.addTo(this.#map);
+                marker.on("click", (e) => {
+                    //Callback triggered, a plane got clicked and we execute the call back passing the HEX value inside an object
+                    if (this.#selectedAirplane) {
+                        this.#selectedAirplane.setIcon(this.#defaultAirplaneIcon);
+                    }
+                    e.target.setIcon(this.#selectedAirplaneIcon);
+                    this.#selectedAirplane = e.target;
+                    return this.#markerOnClick({ hex })
+            }); //TODO DELETE THIS, ADD SOME LOGIC HERE
+                return true;
+            }
         }
+        
         return false;
     }
     isInBound(coords) {
@@ -75,9 +98,15 @@ export class Map {
     }
     restartMarkers() {
         this.#markers.forEach((marker) => {
-            this.#map.removeLayer(marker);
+            // remove all non-selected planes
+            if (!this.#selectedAirplane || marker._latlng.lat !== this.#selectedAirplane._latlng.lat){
+                this.#map.removeLayer(marker);
+            }
         });
         this.#markers = [];
+        if (this.#selectedAirplane) {
+            this.#markers.push(this.#selectedAirplane);
+        }
     }
     // //depreacated
     // async drawMarkers() {
