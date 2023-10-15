@@ -99,7 +99,7 @@ export class Map {
     restartMarkers() {
         this.#markers.forEach((marker) => {
             // remove all non-selected planes
-            if (!this.#selectedAirplane || marker._latlng.lat !== this.#selectedAirplane._latlng.lat){
+            if (!this.#selectedAirplane || marker._latlng.lat !== this.#selectedAirplane._latlng.lat && marker._latlng.lng !== this.#selectedAirplane._latlng.lng){
                 this.#map.removeLayer(marker);
             }
         });
